@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2015.03.15 10:46:19.352.pas,C:\Users\Alexey\Documents\RAD Studio\Projects\Unit3.pas=C:\Mc_Proj\!AVR\Projects\brute_hard\PC_soft\uMain.pas</Transaction>
+    <Transaction>2015.03.15 10:46:19.352.dfm,C:\Users\Alexey\Documents\RAD Studio\Projects\Unit3.dfm=C:\Mc_Proj\!AVR\Projects\brute_hard\PC_soft\uMain.dfm</Transaction>
+    <Transaction>2015.03.15 10:46:46.067.dproj,C:\Users\Alexey\Documents\RAD Studio\Projects\Project3.dproj=C:\Mc_Proj\!AVR\Projects\brute_hard\PC_soft\PC_con_brute.dproj</Transaction>
+  </Transactions>
+</BorlandProject>
