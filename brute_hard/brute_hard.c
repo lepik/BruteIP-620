@@ -21,6 +21,9 @@
 
 #include "uart.h"
 
+#define ENC_DELAY				110
+#define ENC_END_DELAY			190
+
 //пин "MENU"
 #define MENU_BIT				(PA0)
 #define MENU_PIN				(PINA)
@@ -101,7 +104,7 @@ volatile uint8_t isCSDown = 0; //флаг состояния CS
 volatile uint8_t currByte = 0; //текущий байт LCD
 volatile uint8_t currCouBit = 0; //текущий бит LCD
 volatile uint8_t currCou = 0; //счетчик байт LCD
-
+volatile uint8_t viewUART = 0;
 
 //char *utoa_cycle_sub(uint32_t value, char *buffer)
 //{
@@ -160,6 +163,8 @@ ISR(TIMER0_OVF_vect) // Timer/Counter0 Overflow
 		curr_time_msec++;
 	}else{
 		curr_time_msec=0;
+		if (viewUART == 0)
+			viewUART=1;
 	}	
 }
 
@@ -212,7 +217,7 @@ ISR(INT1_vect)//обработка прерываний INT2 (WR)
 	sei();
 }
 
-void encoder(void){ //эмулятор энкодера
+void encoder_up(void){ //эмулятор энкодера
 	
 	PORTA|=(1<<PA1);
 	_delay_ms(6);
@@ -226,6 +231,20 @@ void encoder(void){ //эмулятор энкодера
 	PORTA|=(1<<PA1);	
 }
 
+void encoder_down(void){ //эмулятор энкодера
+	
+	PORTA|=(1<<PA2);
+	_delay_ms(6);
+	PORTA|=(1<<PA1);
+	_delay_ms(6);
+	
+	PORTA&=~(1<<PA2);
+	_delay_ms(6);
+	PORTA&=~(1<<PA1);
+	_delay_ms(6);
+	PORTA|=(1<<PA2);
+}
+
 void press_menu(uint8_t cs){ //нажимаем кнопку "MENU"
 	if ((isWaitCS == 1)&&(cs == 0)){ //если ждем CS и пин CS высокий
 		disable_int();
@@ -236,18 +255,19 @@ void press_menu(uint8_t cs){ //нажимаем кнопку "MENU"
 		enable_int();
 		isWaitCS=1;
 	}
-	_delay_ms(160);
+	_delay_ms(100);
 	MENU_DOWN;
 }
 
 void press_f(void){ //нажимаем кнопку "F"
 	PORTA |=(1<<PA3);
-	_delay_ms(150);
+	_delay_ms(100);
 	PORTA &=~(1<<PA3);
 }
 
 uint8_t compare_buff(void){ //сравниваем буффер с "эталоном"
 	uint8_t res=1;
+	disable_int();
 	for(uint8_t i=0; i<15; i++){
 		if (pgm_read_byte(&compare_set[i]) != curr_lcd_set[i]){
 			res=0;
@@ -262,162 +282,163 @@ void increm(void){ //заносим счетчик в значения буффера для пароля
 }
 
 
-void encod_num(uint8_t e_num){ //установка цифры
+void encod_num_up(uint8_t e_num){ //установка цифры
+		
 	switch(e_num)
 	{
 		case 0:		
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();			
-			_delay_ms(190);			
+			encoder_up();			
+			_delay_ms(ENC_END_DELAY);			
 		break;		
 		case 1:
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(190);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_END_DELAY);
 		break;
 		case 2:
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(190);			
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_END_DELAY);			
 		break;
 		case 3:
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();			
-			_delay_ms(190);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();			
+			_delay_ms(ENC_END_DELAY);
 		break;
 		case 4:
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();			
-			_delay_ms(190);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();			
+			_delay_ms(ENC_END_DELAY);
 		break;
 		case 5:
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();			
-			_delay_ms(190);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();			
+			_delay_ms(ENC_END_DELAY);
 		break;
 		case 6:
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();			
-			_delay_ms(190);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();			
+			_delay_ms(ENC_END_DELAY);
 		break;
 		case 7:
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();			
-			_delay_ms(190);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();			
+			_delay_ms(ENC_END_DELAY);
 		break;
 		case 8:
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();
-			_delay_ms(110);
-			encoder();			
-			_delay_ms(190);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();
+			_delay_ms(ENC_DELAY);
+			encoder_up();			
+			_delay_ms(ENC_END_DELAY);
 		break;
 		case 9:
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();
+			encoder_up();
 			_delay_ms(105);
-			encoder();					
-			_delay_ms(190);
+			encoder_up();					
+			_delay_ms(ENC_END_DELAY);
 		break;
 		default:
 		
@@ -428,41 +449,42 @@ void encod_num(uint8_t e_num){ //установка цифры
 void send_radio_pass(void){// процедура установки текущего пароля на устройстве
 	
 	press_menu(0);
-	_delay_ms(150);
-	encod_num(curr_pass_set[0]-0x30);
-	_delay_ms(100);
+	_delay_ms(70);
+
+	encod_num_up(curr_pass_set[0]-0x30);
+	_delay_ms(70);
 	press_menu(0);
-	_delay_ms(120);
-			
-	encod_num(curr_pass_set[1]-0x30);
-	_delay_ms(100);
+	_delay_ms(70);
+	
+	encod_num_up(curr_pass_set[1]-0x30);
+	_delay_ms(70);
 	press_menu(0);
-	_delay_ms(120);
+	_delay_ms(70);
 			
-	encod_num(curr_pass_set[2]-0x30);
-	_delay_ms(100);
+	encod_num_up(curr_pass_set[2]-0x30);	
+	_delay_ms(70);
 	press_menu(0);
-	_delay_ms(120);
+	_delay_ms(70);
 			
-	encod_num(curr_pass_set[3]-0x30);
-	_delay_ms(100);
+	encod_num_up(curr_pass_set[3]-0x30);	
+	_delay_ms(70);
 	press_menu(0);
-	_delay_ms(120);
+	_delay_ms(70);
 			
-	encod_num(curr_pass_set[4]-0x30);
-	_delay_ms(100);
+	encod_num_up(curr_pass_set[4]-0x30);	
+	_delay_ms(70);
 	press_menu(0);
-	_delay_ms(120);
+	_delay_ms(70);
 			
-	encod_num(curr_pass_set[5]-0x30);
-	_delay_ms(100);
+	encod_num_up(curr_pass_set[5]-0x30);	
+	_delay_ms(60);
 	press_menu(1);
-	_delay_ms(120);
-		
+	_delay_ms(70);
+	
 }
 
-void delay_7s(void){ //задержка ~7 секунд
-	for(uint8_t i=0; i<70; i++){
+void delay_6s(void){ //задержка ~6 секунд
+	for(uint8_t i=0; i<60; i++){
 		_delay_ms(100);
 	} 
 }
@@ -501,8 +523,6 @@ void uart_cmd(char cmd){
 	}
 }
 
-
-
 void poll_rx_uart(){
 	unsigned int c;
 	int Count;
@@ -530,33 +550,26 @@ int main(void)
 	sei(); // enable interrupts		
 	press_f();
 	increm();
-	//пишем в терминал откуда начали
-	//uart_puts(curr_pass_set);
-	//uart_puts("\r\n");
-	//uart_puts("START");
-	//uart_puts("\r\n");
-	//врубаем прерывания
 	_delay_ms(150);
 	init_int_on();
 	disable_int();
     while(1)
     {	
 		/* опрос UART */
-		if (curr_time_msec == 999){
+		if (viewUART == 1){
 			poll_rx_uart();
-			curr_time_msec=0;
+			viewUART=0;
 		}				
 		if (isBrute == 1){
-			poll_rx_uart();			
+			poll_rx_uart();
 			send_radio_pass(); //устанавливаем данные
-			_delay_ms(100);			
+			_delay_ms(70);			
 			if (compare_buff() == 0){//сравниваем буффер
-				disable_int();
-				delay_7s();
+				delay_6s();
 				press_f();
-				_delay_ms(100);
+				_delay_ms(70);
 				press_f();
-				_delay_ms(200);
+				_delay_ms(70);
 				uart_puts(" ");
 				uart_puts("N");
 				uart_puts(curr_pass_set);
